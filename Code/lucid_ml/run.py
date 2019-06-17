@@ -496,6 +496,21 @@ def run(options):
     # go to interactive mode if on
     _check_interactive(options, X, Y, extractor, mlb)
 
+    if options.predict:
+        clf = create_classifier(options, Y.shape[1])  # --- INTERACTIVE MODE ---
+        thesaurus = tr.thesaurus
+        print("Ready.")
+        try:
+            for line in sys.stdin:
+                x = extractor.transform([line])
+                y = clf.predict(x)
+                desc_ids = mlb.inverse_transform(y)[0]
+                labels = [thesaurus[desc_id]['prefLabel'] for desc_id in desc_ids]
+                print(*labels)
+        except KeyboardInterrupt:
+            exit(1)
+        exit(0)
+
     if VERBOSE: print("Performing %d-fold cross-validation..." % (options.folds if options.cross_validation else 1))
 
     # prepare validation over folds
@@ -673,10 +688,11 @@ def create_classifier(options, num_concepts):
                                      meta_labeler_phi = options.meta_labeler_phi,
                                      meta_labeler_alpha = options.meta_labeler_alpha,
                                      meta_labeler_min_labels = options.meta_labeler_min_labels,
-                                     meta_labeler_max_labels = options.meta_labeler_max_labels),
-        "nam": ThresholdingPredictor(MLP(verbose=options.verbose, final_activation='sigmoid', batch_size = options.batch_size, 
-                                         learning_rate = options.learning_rate, 
-                                         epochs = options.max_iterations), 
+                                     meta_labeler_max_labels = options.meta_labeler_max_labels,
+                                     pretrained_model_path = options.pretrained_model_path),
+        "nam": ThresholdingPredictor(MLP(verbose=options.verbose, final_activation='sigmoid', batch_size = options.batch_size,
+                                         learning_rate = options.learning_rate,
+                                         epochs = options.max_iterations),
                                      alpha=options.alpha, stepsize=0.01, verbose=options.verbose),
         "mlpthr": LinRegStack(mlp, verbose=options.verbose),
         "mlpdt" : ClassifierStack(base_classifier=mlp, n_jobs=options.jobs, n=options.k)
@@ -743,7 +759,7 @@ def _generate_parsers():
     "Perform cross validation with fixed folds.")
     execution_options.add_argument('-i', '--interactive', action="store_true", dest="interactive", default=False, help= \
         "Use whole supplied data as training set and classify new inputs from STDIN")
-
+    execution_options.add_argument('--predict', action="store_true", dest="predict", default=False, help="Run a saved model")
 
     # be a little versatile
     detailed_options = parser.add_argument_group("Detailed Execution Options")
@@ -865,6 +881,7 @@ def _generate_parsers():
     "Specify the path to a file contraining pretrained word embeddings. The file must have a format where each line consists of the word\
      followed by the entries of its vectors, separated by blanks. If None is specified, the word embeddings are zero-initialized and trained\
      jointly with the classification task. [None]")
+    neural_network_options.add_argument('--pretrained_model_path', type=str, dest="pretrained_model_path", default=None, help="Specify path to pretrained model.")
     neural_network_options.add_argument('--hidden_activation_function', type=str, dest="hidden_activation_function", default="relu", help=
     "Specify the activation function used on the hidden layers in MLP-Base and MLP-Soph. [relu]", choices = ["relu", "tanh", "identity", "swish"])
     neural_network_options.add_argument('--trainable_embeddings', action="store_true", dest="trainable_embeddings", default=False, help=

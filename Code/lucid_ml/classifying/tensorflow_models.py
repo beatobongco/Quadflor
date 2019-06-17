@@ -557,7 +557,8 @@ class MultiLabelSKFlow(BaseEstimator):
                        meta_labeler_phi = None,
                        meta_labeler_alpha = 0.1,
                        meta_labeler_min_labels = 1,
-                       meta_labeler_max_labels = None):
+                       meta_labeler_max_labels = None, 
+                       pretrained_model_path = None):
         """
     
         """
@@ -600,6 +601,8 @@ class MultiLabelSKFlow(BaseEstimator):
         # determine how much of gpu to use
         self.gpu_memory_fraction = gpu_memory_fraction
         
+        self.pretrained_model_path = pretrained_model_path
+
     def _get_save_model_path(self):
         TMP_FOLDER = self.TF_MODEL_PATH
         if not os.path.exists(TMP_FOLDER):
@@ -908,7 +911,12 @@ class MultiLabelSKFlow(BaseEstimator):
         
         session = self.session
         #loaded_graph = tf.Graph()
-        if self.validation_data_position:
+        if self.pretrained_model_path:
+            # Load model
+            loader = tf.train.import_meta_graph(self.pretrained_model_path + '.meta')
+            loader.restore(self.session, self.pretrained_model_path)
+
+        elif self.validation_data_position:
             # Load model
             loader = tf.train.import_meta_graph(self._save_model_path + '.meta')
             loader.restore(self.session, self._save_model_path)
