@@ -1,23 +1,22 @@
 """ Probabilistic KNeighbors Classification """
+import random
+from math import sqrt
+
 # -*- coding: utf-8 -*-
 import numpy as np
-import random
-from scipy.sparse import lil_matrix, csr_matrix, vstack, find
-
-from sklearn.neighbors.base import NeighborsBase, KNeighborsMixin, SupervisedIntegerMixin
+from scipy.sparse import csr_matrix, find, lil_matrix, vstack
 from sklearn.base import ClassifierMixin
+from sklearn.neighbors.base import (KNeighborsMixin, NeighborsBase,
+                                    SupervisedIntegerMixin)
 from sklearn.utils import check_array
-from math import sqrt
+
 
 class MeanCutKNeighborsClassifier(NeighborsBase, KNeighborsMixin, ClassifierMixin):
     def __init__(self, n_neighbors=5,
             soft=False, algorithm='auto', leaf_size=30,
             p=2, metric='minkowski', metric_params=None, n_jobs=1,
             **kwargs):
-        self._init_params(n_neighbors=n_neighbors,
-                algorithm=algorithm,
-                leaf_size=leaf_size, metric=metric, p=p,
-                metric_params=metric_params, n_jobs=n_jobs, **kwargs)
+        super().__init__()
         self.soft = soft
 
     def fit(self, X, y=None):
@@ -78,7 +77,3 @@ class MeanCutKNeighborsClassifier(NeighborsBase, KNeighborsMixin, ClassifierMixi
             y_pred = vstack((y_pred, row))
 
         return y_pred
-
-
-
-        
