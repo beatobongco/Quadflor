@@ -908,8 +908,9 @@ class MultiLabelSKFlow(BaseEstimator):
         
         
     def predict(self, X):
-        
-        session = self.session
+        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=self.gpu_memory_fraction)
+        session = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+
         #loaded_graph = tf.Graph()
         if self.pretrained_model_path:
             # Load model
