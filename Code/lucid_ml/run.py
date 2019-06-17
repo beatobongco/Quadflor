@@ -499,19 +499,13 @@ def run(options):
     if options.predict:
         clf = create_classifier(options, Y.shape[1])  # --- INTERACTIVE MODE ---
         thesaurus = tr.thesaurus
-        print("Ready.")
-        try:
-            while True:
-                line = sys.stdin.readline()
-                if line == 'EOF\n':
-                    break
+        with open(options.input_file, 'r') as f:
+            for line in f:
                 x = extractor.transform([line])
                 y = clf.predict(x)
                 desc_ids = mlb.inverse_transform(y)[0]
                 labels = [thesaurus[desc_id]['prefLabel'] for desc_id in desc_ids]
                 print(*labels)
-        except KeyboardInterrupt:
-            exit(1)
         exit(0)
 
     if VERBOSE: print("Performing %d-fold cross-validation..." % (options.folds if options.cross_validation else 1))
@@ -735,6 +729,7 @@ def _generate_parsers():
     parser.add_argument('-j', type=int, dest='jobs', default=1, help="Number of jobs (processes) to use when something can be parallelized. -1 means as many as possible.")
     parser.add_argument('-o', '--output', dest="output_file", type=str, default='', help= \
         "Specify the file name to save the result in. Default: [None]")
+    parser.add_argument('--input', dest="input_file", type=str, default='', help="Specify the file name to save the result in. Default: [None]")
     parser.add_argument('-O',
                     '--plot',
                     type=str,
