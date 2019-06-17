@@ -501,7 +501,10 @@ def run(options):
         thesaurus = tr.thesaurus
         print("Ready.")
         try:
-            for line in sys.stdin:
+            while True:
+                line = sys.stdin.readline()
+                if line == 'EOF\n':
+                    break
                 x = extractor.transform([line])
                 y = clf.predict(x)
                 desc_ids = mlb.inverse_transform(y)[0]
