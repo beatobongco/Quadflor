@@ -498,14 +498,14 @@ def run(options):
 
     if options.predict:
         clf = create_classifier(options, Y.shape[1])  # --- INTERACTIVE MODE ---
-        thesaurus = tr.thesaurus
+        # thesaurus = tr.thesaurus
         with open(options.input_file, 'r') as f:
             for line in f:
                 x = extractor.transform([line])
                 y = clf.predict(x)
-                desc_ids = mlb.inverse_transform(y)[0]
-                labels = [thesaurus[desc_id]['prefLabel'] for desc_id in desc_ids]
-                print(*labels)
+                desc_ids = mlb.inverse_transform(y)
+                # labels = [thesaurus[desc_id]['prefLabel'] for desc_id in desc_ids]
+                print(desc_ids)
         exit(0)
 
     if VERBOSE: print("Performing %d-fold cross-validation..." % (options.folds if options.cross_validation else 1))
